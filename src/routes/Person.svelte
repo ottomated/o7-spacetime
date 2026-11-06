@@ -4,3 +4,5 @@
 
 	const person = table(tables.person);
 </script>
+
+<p>Child: {person.rows.map((p) => p.name)}</p>

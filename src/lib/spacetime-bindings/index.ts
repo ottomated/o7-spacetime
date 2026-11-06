@@ -35,7 +35,9 @@ import {
 
 // Import all reducer arg schemas
 import AddReducer from "./add_reducer";
+import RemoveReducer from "./remove_reducer";
 import SayHelloReducer from "./say_hello_reducer";
+import UpdateReducer from "./update_reducer";
 
 // Import all procedure arg schemas
 
@@ -49,8 +51,12 @@ const tablesSchema = __schema({
   person: __table({
     name: 'person',
     indexes: [
+      { accessor: 'id', name: 'person_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
     ],
     constraints: [
+      { name: 'person_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, PersonRow),
 });
@@ -58,7 +64,9 @@ const tablesSchema = __schema({
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("add", AddReducer),
+  __reducerSchema("remove", RemoveReducer),
   __reducerSchema("say_hello", SayHelloReducer),
+  __reducerSchema("update", UpdateReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

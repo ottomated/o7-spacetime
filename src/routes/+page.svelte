@@ -8,23 +8,31 @@
 
 	let add_name = $state.raw('');
 	const add = reducer(reducers.add);
+	const remove = reducer(reducers.remove);
+	const update = reducer(reducers.update);
 	const say_hello = reducer(reducers.sayHello);
 
-	const people = table(tables.person.where((w) => w.name.eq('a')));
+	const people = table(tables.person.where((x) => x.id.lt(4n)));
 	let mounted = $state(false);
 </script>
 
 <p>{connection.state}</p>
 <p>{connection.identity}</p>
 <p>{connection.connectionId?.toHexString()}</p>
-<p>Error: {connection.connectionError?.message}</p>
+<p>{connection.connectionError?.message}</p>
 <p>{connection.token}</p>
 
-<input bind:value={add_name} />
-<button onclick={() => add({ name: add_name }).catch(console.error)}>add</button>
-<button onclick={() => say_hello()}>say hello</button>
-
-<button onclick={() => (mounted = !mounted)}>Mount</button>
-{#if mounted}
-	<Person />
-{/if}
+<div>
+	<input bind:value={add_name} />
+	<button onclick={() => add({ name: add_name }).catch(console.error)}>add</button>
+</div>
+{#each people.rows as row (row.id)}
+	{let name = $derived(row.name)}
+	<div>
+		{row.id}
+		{row.name}
+		<input bind:value={name} />
+		<button onclick={() => update({ id: row.id, name })}>update</button>
+		<button onclick={() => remove({ id: row.id })}>delete</button>
+	</div>
+{/each}

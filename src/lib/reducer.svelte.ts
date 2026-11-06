@@ -1,16 +1,10 @@
-import type { ColumnBuilder, ParamsType, ProductType, TypeBuilder } from 'spacetimedb/sdk';
+import type { InferTypeOfParams, MaybeParams, RowObj } from 'spacetimedb';
 import { getConnection } from './provider.svelte';
 import { browser } from '$app/env';
 
-export type UntypedReducerDef = {
-	name: string;
-	accessorName: string;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	params: Record<string, TypeBuilder<any, any> | ColumnBuilder<any, any, any>>;
-	paramsType: ProductType;
-};
-
-export function reducer<ReducerDef extends UntypedReducerDef>(def: ReducerDef) {
+export function reducer<ReducerDef extends { accessorName: string; params: RowObj }>(
+	def: ReducerDef,
+) {
 	if (!browser) {
 		return () => {
 			throw new Error('Cannot call a SpacetimeDB reducer during SSR');
@@ -19,7 +13,7 @@ export function reducer<ReducerDef extends UntypedReducerDef>(def: ReducerDef) {
 	const instance = getConnection();
 	const name = def.accessorName;
 
-	type Params = ParamsType<ReducerDef>;
+	type Params = MaybeParams<InferTypeOfParams<ReducerDef['params']>>;
 
 	const queue: Array<{
 		params: Params;

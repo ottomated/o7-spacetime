@@ -4,42 +4,100 @@ import {
 	getQueryWhereClause,
 	toSql,
 	type ClientTable,
+	type EventContextInterface,
 	type Query,
-	type RowTypedQuery,
 	type TypedTableDef,
 } from 'spacetimedb';
 import { getConnection } from './provider.svelte';
 
-/**
- * Extracts the row type produced by a query.
- *
- * `Query<TableDef>` is an alias for `RowTypedQuery<RowType<TableDef>, TableDef['rowType']>`,
- * so the row type is recoverable from the query type itself via `__row`.
- */
-type QueryRow<Q> = Q extends RowTypedQuery<infer Row, unknown> ? Row : never;
-
-class Table<Row> {
+class Table<Row extends Record<string, unknown>> {
 	rows = $state<Row[]>([]);
+
+	#index_map = new Map<unknown, number>();
+	#get_map_key: (row: Row) => unknown;
+	constructor(query: Query<TypedTableDef>) {
+		this.#get_map_key; // todo
+	}
+
+	insert(row: Row) {
+		const key = this.#get_map_key(row);
+
+		if (this.#index_map.has(key)) return;
+		this.rows.push(row);
+		this.#index_map.set(key, this.rows.length - 1);
+	}
+	remove(row: Row) {
+		const key = this.#get_map_key(row);
+
+		const index = this.#index_map.get(key);
+		if (index === undefined) return;
+
+		this.rows.splice(index, 1);
+		this.#index_map.delete(key);
+		for (const [key, other_index] of this.#index_map) {
+			if (other_index > index) this.#index_map.set(key, other_index - 1);
+		}
+	}
+	update(old_row: Row, new_row: Row) {
+		const old_key = this.#get_map_key(old_row);
+		const index = this.#index_map.get(old_key);
+		if (index === undefined) {
+			this.insert(new_row);
+			return;
+		}
+		const old_row_state = this.rows[index];
+		Object.assign(old_row_state, new_row);
+		this.#index_map.delete(old_key);
+		this.#index_map.set(this.#get_map_key(new_row), index);
+	}
+	set_rows(rows: Array<Row>) {
+		this.rows = rows;
+		this.#index_map.clear();
+		for (let index = 0; index < rows.length; index++) {
+			const key = this.#get_map_key(rows[index]!);
+			this.#index_map.set(key, index);
+		}
+	}
 }
 
-type OnInsert = Parameters<ClientTable<any, string>['onInsert']>[0];
-type OnUpdate = Parameters<ClientTable<any, string>['onUpdate']>[0];
-type OnDelete = Parameters<ClientTable<any, string>['onDelete']>[0];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Ctx = EventContextInterface<any>;
 
 export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
-	type Row = QueryRow<typeof query>;
+	type Row = NonNullable<(typeof query)['__row']>;
+	console.log(query);
 	const accessor_name = getQueryAccessorName(query);
 	const where_expr = getQueryWhereClause(query);
 	const query_sql = toSql(query);
 
-	const instance = getConnection();
+	const instance = getConnection(query);
 
 	const table = new Table<Row>();
 
-	const on_insert: OnInsert = (ctx, row) => {
+	const on_insert = (ctx: Ctx, row: Row) => {
 		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
+		console.log('insert', row);
+		table.insert(row);
+	};
 
-		console.log('insert', query_sql, row);
+	const on_update = (ctx: Ctx, old_row: Row, new_row: Row) => {
+		const old_in = where_expr ? evaluateBooleanExpr(where_expr, old_row) : true;
+		const new_in = where_expr ? evaluateBooleanExpr(where_expr, new_row) : true;
+
+		if (!old_in && !new_in) return;
+		if (!old_in && new_in) {
+			table.insert(new_row);
+			return;
+		}
+		if (!new_in) {
+			table.remove(old_row);
+			return;
+		}
+		table.update(old_row, new_row);
+	};
+
+	const on_delete = (ctx: Ctx, row: Row) => {
+		table.remove(row);
 	};
 
 	$effect(() => {
@@ -48,24 +106,31 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 			return;
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const t = instance.connection.db[accessor_name] as ClientTable<any, string>;
+
 		function get_filtered_rows() {
 			const all = [...t.iter()] as Array<Row>;
 			if (!where_expr) return all;
 			return all.filter((row) => evaluateBooleanExpr(where_expr, row));
 		}
 		t.onInsert(on_insert);
+		t.onUpdate(on_update);
+		t.onDelete(on_delete);
 
 		const subscription = instance.connection
 			.subscriptionBuilder()
 			.onApplied(() => {
-				table.rows = get_filtered_rows();
+				const rows = get_filtered_rows();
+				table.set_rows(rows);
 			})
 			.subscribe(query_sql);
 
 		return () => {
 			if (subscription.isActive()) subscription.unsubscribe();
 			t.removeOnInsert(on_insert);
+			t.removeOnUpdate(on_update);
+			t.removeOnDelete(on_delete);
 		};
 	});
 
