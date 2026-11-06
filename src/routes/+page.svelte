@@ -12,7 +12,7 @@
 	const update = reducer(reducers.update);
 	const say_hello = reducer(reducers.sayHello);
 
-	const people = table(tables.person.where((x) => x.id.lt(4n)));
+	const people = table(tables.person);
 	let mounted = $state(false);
 </script>
 

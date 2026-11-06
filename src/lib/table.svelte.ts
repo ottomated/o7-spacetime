@@ -1,4 +1,6 @@
 import {
+	AlgebraicType,
+	ProductType,
 	evaluateBooleanExpr,
 	getQueryAccessorName,
 	getQueryWhereClause,
@@ -16,7 +18,21 @@ class Table<Row extends Record<string, unknown>> {
 	#index_map = new Map<unknown, number>();
 	#get_map_key: (row: Row) => unknown;
 	constructor(query: Query<TypedTableDef>) {
-		this.#get_map_key; // todo
+		const table_def = get_table_def(query);
+		const pk_column = Object.entries(table_def.columns).find(
+			([, column]) => column.columnMetadata.isPrimaryKey,
+		);
+
+		if (pk_column) {
+			const [name, column] = pk_column;
+			const key_type = column.typeBuilder.algebraicType;
+			// Compare by primary key
+			this.#get_map_key = (row) => AlgebraicType.intoMapKey(key_type, row[name]);
+		} else {
+			// Compare by entire row value
+			const row_type = table_def.rowType;
+			this.#get_map_key = (row) => ProductType.intoMapKey(row_type, row);
+		}
 	}
 
 	insert(row: Row) {
@@ -63,16 +79,30 @@ class Table<Row extends Record<string, unknown>> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Ctx = EventContextInterface<any>;
 
+/**
+ * See getQueryAccessorName
+ */
+function get_table_def(query: Query<TypedTableDef>): TypedTableDef {
+	const q = query as unknown as {
+		tableDef?: TypedTableDef;
+		table?: { tableDef?: TypedTableDef };
+		sourceQuery?: { table?: { tableDef?: TypedTableDef } };
+	};
+	if (q.tableDef) return q.tableDef;
+	if (q.table?.tableDef) return q.table.tableDef;
+	if (q.sourceQuery?.table?.tableDef) return q.sourceQuery.table.tableDef;
+	throw new Error('Cannot extract table def from query builder expression');
+}
+
 export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 	type Row = NonNullable<(typeof query)['__row']>;
-	console.log(query);
 	const accessor_name = getQueryAccessorName(query);
 	const where_expr = getQueryWhereClause(query);
 	const query_sql = toSql(query);
 
-	const instance = getConnection(query);
+	const instance = getConnection();
 
-	const table = new Table<Row>();
+	const table = new Table<Row>(query);
 
 	const on_insert = (ctx: Ctx, row: Row) => {
 		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
@@ -102,7 +132,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 
 	$effect(() => {
 		if (!instance.connection) {
-			table.rows = [];
+			table.set_rows([]);
 			return;
 		}
 
