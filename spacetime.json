@@ -1,0 +1,9 @@
+{
+	"dev": {
+		"run": "pnpm dev"
+	},
+	"database": "test",
+	"server": "local",
+	"module-path": "./spacetimedb",
+	"generate": [{ "language": "typescript", "out-dir": "./src/lib/spacetime-bindings" }]
+}
