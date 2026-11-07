@@ -1,16 +1,12 @@
 import {
 	ConnectionId,
-	DbConnectionImpl,
 	Identity,
 	type DbConnectionBuilder,
 	type DbConnectionConfig,
 } from 'spacetimedb';
 import { connection_cache } from './cache.svelte';
 import { getContext, setContext } from 'svelte';
-
-export type UntypedBuilder = DbConnectionBuilder<UntypedDbConnection>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type UntypedDbConnection = DbConnectionImpl<any>;
+import type { UntypedBuilder, UntypedDbConnection } from './types';
 
 export type ConnectionState_<DbConnection extends UntypedDbConnection> =
 	| {
@@ -122,5 +118,12 @@ export function createSpacetime<DbConnection extends UntypedDbConnection>(
 }
 
 export function getConnection<DbConnection extends UntypedDbConnection>() {
-	return getContext<ConnectionState_<DbConnection>>(context_key);
+	const instance = getContext<ConnectionState_<DbConnection> | undefined>(context_key);
+	if (!instance) {
+		throw new Error(
+			'getConnection must be used within a component that called createSpacetime. ' +
+				'Did you forget to call `createSpacetime` in a parent component?',
+		);
+	}
+	return instance;
 }

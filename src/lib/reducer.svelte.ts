@@ -1,10 +1,10 @@
-import type { InferTypeOfParams, MaybeParams, RowObj } from 'spacetimedb';
 import { getConnection } from './provider.svelte';
 import { browser } from '$app/env';
+import type { ParamsType, UntypedProcedureDef } from './types';
 
-export function reducer<ReducerDef extends { accessorName: string; params: RowObj }>(
+export function reducer<ReducerDef extends UntypedProcedureDef>(
 	def: ReducerDef,
-) {
+): (...params: ParamsType<ReducerDef>) => Promise<void> {
 	if (!browser) {
 		return () => {
 			throw new Error('Cannot call a SpacetimeDB reducer during SSR');
@@ -13,13 +13,14 @@ export function reducer<ReducerDef extends { accessorName: string; params: RowOb
 	const instance = getConnection();
 	const name = def.accessorName;
 
-	type Params = MaybeParams<InferTypeOfParams<ReducerDef['params']>>;
+	type Params = ParamsType<ReducerDef>;
 
 	const queue: Array<{
 		params: Params;
 		resolve: () => void;
 		reject: (err: unknown) => void;
 	}> = [];
+
 	$effect(() => {
 		const connection = instance.connection;
 		if (!connection) return;

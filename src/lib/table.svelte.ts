@@ -5,12 +5,11 @@ import {
 	getQueryAccessorName,
 	getQueryWhereClause,
 	toSql,
-	type ClientTable,
-	type EventContextInterface,
 	type Query,
 	type TypedTableDef,
 } from 'spacetimedb';
 import { getConnection } from './provider.svelte';
+import type { ClientTable, OnDelete, OnInsert, OnUpdate, Prettify } from './types';
 
 class Table<Row extends Record<string, unknown>> {
 	rows = $state<Row[]>([]);
@@ -76,9 +75,6 @@ class Table<Row extends Record<string, unknown>> {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Ctx = EventContextInterface<any>;
-
 /**
  * See getQueryAccessorName
  */
@@ -95,7 +91,8 @@ function get_table_def(query: Query<TypedTableDef>): TypedTableDef {
 }
 
 export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
-	type Row = NonNullable<(typeof query)['__row']>;
+	type Row = Prettify<NonNullable<(typeof query)['__row']>>;
+
 	const accessor_name = getQueryAccessorName(query);
 	const where_expr = getQueryWhereClause(query);
 	const query_sql = toSql(query);
@@ -104,13 +101,13 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 
 	const table = new Table<Row>(query);
 
-	const on_insert = (ctx: Ctx, row: Row) => {
+	const on_insert: OnInsert<Row> = (_, row) => {
 		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
 		console.log('insert', row);
 		table.insert(row);
 	};
 
-	const on_update = (ctx: Ctx, old_row: Row, new_row: Row) => {
+	const on_update: OnUpdate<Row> = (_, old_row, new_row) => {
 		const old_in = where_expr ? evaluateBooleanExpr(where_expr, old_row) : true;
 		const new_in = where_expr ? evaluateBooleanExpr(where_expr, new_row) : true;
 
@@ -126,7 +123,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 		table.update(old_row, new_row);
 	};
 
-	const on_delete = (ctx: Ctx, row: Row) => {
+	const on_delete: OnDelete<Row> = (_, row) => {
 		table.remove(row);
 	};
 
@@ -136,11 +133,10 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 			return;
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const t = instance.connection.db[accessor_name] as ClientTable<any, string>;
+		const t = instance.connection.db[accessor_name] as ClientTable<Row>;
 
 		function get_filtered_rows() {
-			const all = [...t.iter()] as Array<Row>;
+			const all = [...t.iter()];
 			if (!where_expr) return all;
 			return all.filter((row) => evaluateBooleanExpr(where_expr, row));
 		}
