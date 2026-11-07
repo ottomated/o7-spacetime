@@ -33,3 +33,11 @@ export const sayHello = spacetimedb.reducer((ctx) => {
 	}
 	console.info('Hello, World!');
 });
+
+export const clear = spacetimedb.reducer((ctx) => {
+	for (const person of ctx.db.person.iter()) {
+		ctx.db.person.id.delete(person.id);
+	}
+});
+
+export const personCount = spacetimedb.procedure(t.u64(), (ctx) => ctx.db.person.count());

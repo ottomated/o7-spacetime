@@ -27,7 +27,7 @@ export function procedure<ProcedureDef extends UntypedProcedureDef>(
 		if (!connection) return;
 		if (!queue.length) return;
 
-		const fn = connection.reducers[name] as (...p: Params) => Promise<ReturnType>;
+		const fn = connection.procedures[name] as (...p: Params) => Promise<ReturnType>;
 
 		const pending = queue.splice(0);
 		for (const item of pending) {
@@ -42,7 +42,7 @@ export function procedure<ProcedureDef extends UntypedProcedureDef>(
 				queue.push({ params, resolve, reject });
 			});
 		}
-		const fn = connection.reducers[name] as (...p: Params) => Promise<ReturnType>;
+		const fn = connection.procedures[name] as (...p: Params) => Promise<ReturnType>;
 
 		return fn(...params);
 	};

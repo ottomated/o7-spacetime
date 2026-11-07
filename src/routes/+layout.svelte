@@ -15,8 +15,12 @@
 	);
 </script>
 
-<button onclick={() => (database_name = database_name === 'test' ? 'test2' : 'test')}
-	>set url</button
+<button
+	data-testid="toggle-db"
+	onclick={() => (database_name = database_name === 'test' ? 'test2' : 'test')}
 >
-<button onclick={() => (token = 'test')}>set token</button>
+	toggle db
+</button>
+<button data-testid="set-bad-token" onclick={() => (token = 'test')}>set bad token</button>
+
 {@render children()}
