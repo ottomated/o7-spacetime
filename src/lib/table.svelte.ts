@@ -14,8 +14,16 @@ import type { ClientTable, OnDelete, OnInsert, OnUpdate, Prettify } from './type
 class Table<Row extends Record<string, unknown>> {
 	rows = $state<Row[]>([]);
 
+	#is_active = $state.raw(false);
+
+	get isActive() {
+		return this.#is_active;
+	}
+
 	#index_map = new Map<unknown, number>();
 	#get_map_key: (row: Row) => unknown;
+
+	/** @internal */
 	constructor(query: Query<TypedTableDef>) {
 		const table_def = get_table_def(query);
 		const pk_column = Object.entries(table_def.columns).find(
@@ -34,6 +42,7 @@ class Table<Row extends Record<string, unknown>> {
 		}
 	}
 
+	/** @internal */
 	insert(row: Row) {
 		const key = this.#get_map_key(row);
 
@@ -41,6 +50,7 @@ class Table<Row extends Record<string, unknown>> {
 		this.rows.push(row);
 		this.#index_map.set(key, this.rows.length - 1);
 	}
+	/** @internal */
 	remove(row: Row) {
 		const key = this.#get_map_key(row);
 
@@ -53,6 +63,7 @@ class Table<Row extends Record<string, unknown>> {
 			if (other_index > index) this.#index_map.set(key, other_index - 1);
 		}
 	}
+	/** @internal */
 	update(old_row: Row, new_row: Row) {
 		const old_key = this.#get_map_key(old_row);
 		const index = this.#index_map.get(old_key);
@@ -65,6 +76,7 @@ class Table<Row extends Record<string, unknown>> {
 		this.#index_map.delete(old_key);
 		this.#index_map.set(this.#get_map_key(new_row), index);
 	}
+	/** @internal */
 	set_rows(rows: Array<Row>) {
 		this.rows = rows;
 		this.#index_map.clear();
@@ -72,6 +84,10 @@ class Table<Row extends Record<string, unknown>> {
 			const key = this.#get_map_key(rows[index]!);
 			this.#index_map.set(key, index);
 		}
+	}
+	/** @internal */
+	set_active(value: boolean) {
+		this.#is_active = value;
 	}
 }
 
@@ -103,7 +119,6 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 
 	const on_insert: OnInsert<Row> = (_, row) => {
 		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
-		console.log('insert', row);
 		table.insert(row);
 	};
 
@@ -130,6 +145,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 	$effect(() => {
 		if (!instance.connection) {
 			table.set_rows([]);
+			table.set_active(false);
 			return;
 		}
 
@@ -148,6 +164,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 			.subscriptionBuilder()
 			.onApplied(() => {
 				const rows = get_filtered_rows();
+				table.set_active(true);
 				table.set_rows(rows);
 			})
 			.subscribe(query_sql);

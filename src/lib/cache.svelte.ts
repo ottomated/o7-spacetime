@@ -42,6 +42,9 @@ export class CacheController {
 					state.disconnect(error);
 				}
 			});
+			if (!config.automaticReconnect) {
+				builder = builder.withAutomaticReconnect();
+			}
 			entry.connection = builder.build();
 			this.map.set(key, entry);
 		}

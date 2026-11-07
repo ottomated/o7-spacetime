@@ -18,6 +18,7 @@ export const add = spacetimedb.reducer({ name: t.string() }, (ctx, { name }) => 
 export const remove = spacetimedb.reducer({ id: t.u64() }, (ctx, { id }) => {
 	ctx.db.person.id.delete(id);
 });
+
 export const update = spacetimedb.reducer(
 	{ id: t.u64(), name: t.string() },
 	(ctx, { id, name }) => {
@@ -27,6 +28,7 @@ export const update = spacetimedb.reducer(
 
 export const sayHello = spacetimedb.reducer((ctx) => {
 	for (const person of ctx.db.person.iter()) {
+		ctx.db.person.id.update({ id: person.id, name: person.name + ' a' });
 		console.info(`Hello, ${person.name}!`);
 	}
 	console.info('Hello, World!');

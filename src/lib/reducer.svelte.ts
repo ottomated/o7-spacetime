@@ -1,8 +1,8 @@
 import { getConnection } from './provider.svelte';
 import { browser } from '$app/env';
-import type { ParamsType, UntypedProcedureDef } from './types';
+import type { ParamsType, UntypedReducerDef } from './types';
 
-export function reducer<ReducerDef extends UntypedProcedureDef>(
+export function reducer<ReducerDef extends UntypedReducerDef>(
 	def: ReducerDef,
 ): (...params: ParamsType<ReducerDef>) => Promise<void> {
 	if (!browser) {

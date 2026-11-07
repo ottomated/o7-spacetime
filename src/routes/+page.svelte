@@ -2,7 +2,6 @@
 	import { getConnection, reducer } from '#lib/index.ts';
 	import { reducers, tables } from '#lib/spacetime-bindings/index.ts';
 	import { table } from '#lib/table.svelte.ts';
-	import Person from './Person.svelte';
 
 	const connection = getConnection();
 
@@ -13,7 +12,6 @@
 	const say_hello = reducer(reducers.sayHello);
 
 	const people = table(tables.person);
-	let mounted = $state(false);
 </script>
 
 <p>{connection.state}</p>
@@ -36,3 +34,5 @@
 		<button onclick={() => remove({ id: row.id })}>delete</button>
 	</div>
 {/each}
+
+<button onclick={() => say_hello()}>update all</button>
