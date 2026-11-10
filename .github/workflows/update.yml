@@ -33,7 +33,7 @@ jobs:
         run: |
           export PATH="/root/.local/bin:$PATH"
           pnpm exec playwright install chromium
-          pnpm exec playwright install-deps
+          pnpm exec playwright install-deps chrome
           pnpm test:e2e
 
       # - name: Publish
