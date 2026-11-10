@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 	fullyParallel: false,
@@ -17,4 +17,10 @@ export default defineConfig({
 	],
 	use: { baseURL: 'http://localhost:4173' },
 	testMatch: '**/*.e2e.{ts,js}',
+	projects: [
+		{
+			name: 'chrome',
+			use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+		},
+	],
 });

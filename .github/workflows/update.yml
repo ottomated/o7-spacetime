@@ -29,7 +29,11 @@ jobs:
         run: pnpm lint
 
       - name: Test
-        run: pnpm test:e2e
+        run: |
+          export PATH="/root/.local/bin:$PATH"
+          pnpm exec playwright install chromium
+          pnpm exec playwright install-deps
+          pnpm test:e2e
 
       # - name: Publish
       #   run: pnpm publish --no-git-checks
