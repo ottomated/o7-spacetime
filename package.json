@@ -8,7 +8,9 @@
 	"files": [
 		"dist",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"!dist/**/*.spec.*",
+		"!dist/spacetime-bindings",
+		"!dist/types.js"
 	],
 	"type": "module",
 	"sideEffects": [
