@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       spacetimedb:
-        specifier: 2.14.*
-        version: 2.14.0
+        specifier: ~2.14.1
+        version: 2.14.1
     devDependencies:
       typescript:
         specifier: ^6.0.3
@@ -40,8 +40,9 @@ packages:
     resolution: {integrity: sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA==}
     engines: {node: '>=10'}
 
-  spacetimedb@2.14.0:
-    resolution: {integrity: sha512-u3rcGjy5A/qInTuEYBbGmKv0Rr7JN5iCtW67D9G4as2yRYJrxhhUVe1i1oIzcn/YdtfT9yeE3JYGSIPJPoL8eQ==}
+  spacetimedb@2.14.1:
+    resolution: {integrity: sha512-UZXX5Dao7BA749xs2iAsOUl1Oglp8xuL9aiojdoNKkEuJm41NWinGMfor2j93QvxEOnyzIvegzDRZ61mO7WNIg==}
+    engines: {node: ^22.23.4 || ^24.22.1 || >=26.12.1}
     peerDependencies:
       '@angular/core': '>=17.0.0'
       '@tanstack/react-query': ^5.0.0
@@ -92,7 +93,7 @@ snapshots:
 
   safe-stable-stringify@2.5.0: {}
 
-  spacetimedb@2.14.0:
+  spacetimedb@2.14.1:
     dependencies:
       base64-js: 1.5.1
       headers-polyfill: 4.0.3

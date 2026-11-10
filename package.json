@@ -1,7 +1,8 @@
 {
-	"name": "spacetimedb-svelte5",
+	"name": "@o7/spacetime",
 	"version": "0.0.1",
 	"keywords": [
+		"spacetimedb",
 		"svelte"
 	],
 	"files": [
@@ -51,7 +52,7 @@
 		"globals": "^17.6.0",
 		"oxfmt": "^0.75.0",
 		"publint": "^0.3.21",
-		"spacetimedb": "^2.14.0",
+		"spacetimedb": "^2.14.1",
 		"svelte": "^5.57.2",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",

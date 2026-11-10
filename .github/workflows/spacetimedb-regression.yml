@@ -1,0 +1,92 @@
+name: Check regressions
+
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Run even if version already checked
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spacetimedb-regression
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    outputs:
+      version_key: ${{ steps.versions.outputs.version_key }}
+      cache_hit: ${{ steps.cache.outputs.cache-hit == 'true' }}
+    steps:
+      - name: Get latest version
+        id: versions
+        run: |
+          set -euo pipefail
+          sdk="$(curl -fsSL https://registry.npmjs.org/-/package/spacetimedb/dist-tags | jq -r '.latest')"
+          cli="$(curl -fsSL -o /dev/null -w '%{url_effective}' \
+            https://github.com/clockworklabs/SpacetimeDB/releases/latest | sed 's|.*/tag/||')"
+          echo "sdk=${sdk} cli=${cli}"
+          echo "version_key=spacetimedb-tested-sdk-${sdk}-cli-${cli}" >> "$GITHUB_OUTPUT"
+
+      - name: Check cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        id: cache
+        with:
+          path: .spacetimedb-regression
+          key: ${{ steps.versions.outputs.version_key }}
+
+  regression:
+    needs: probe
+    if: ${{ needs.probe.outputs.cache_hit != 'true' || (github.event_name == 'workflow_dispatch' && inputs.force) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install spacetime
+        run: curl -sSf https://install.spacetimedb.com | sh -s -- -y
+
+      - name: Install pnpm
+        uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3
+        with:
+          cache: true
+          runtime: node@lts
+          install: true
+          require-lockfile: true
+
+      - name: Upgrade spacetime client
+        run: |
+          pnpm up spacetimedb --latest --config.minimum-release-age=0
+          cd spacetimedb
+          pnpm up spacetimedb --latest --config.minimum-release-age=0
+          spacetime generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Test
+        run: |
+          export PATH="/root/.local/bin:$PATH"
+          pnpm exec playwright install chromium
+          pnpm exec playwright install-deps chrome
+          pnpm test:e2e
+
+      - name: Mark these versions as tested
+        run: |
+          mkdir -p .spacetimedb-regression
+          echo "${{ needs.probe.outputs.version_key }}" > .spacetimedb-regression/tested
+
+      - name: Record the tested versions in the cache
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .spacetimedb-regression
+          key: ${{ needs.probe.outputs.version_key }}
