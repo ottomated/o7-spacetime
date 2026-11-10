@@ -62,5 +62,6 @@
 	"peerDependencies": {
 		"spacetimedb": "^2.0.0",
 		"svelte": "^5.0.0"
-	}
+	},
+	"packageManager": "pnpm@12.18.0"
 }

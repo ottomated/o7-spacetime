@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../app.css';
 	import { createSpacetime } from '#lib/index.ts';
 	import { DbConnection } from '#lib/spacetime-bindings/index.ts';
 

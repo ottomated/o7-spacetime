@@ -4,15 +4,19 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-  TypeBuilder as __TypeBuilder,
-  t as __t,
-  type AlgebraicTypeType as __AlgebraicTypeType,
-  type Infer as __Infer,
-} from "spacetimedb";
+	TypeBuilder as __TypeBuilder,
+	t as __t,
+	type AlgebraicTypeType as __AlgebraicTypeType,
+	type Infer as __Infer,
+} from 'spacetimedb';
 
-export const Person = __t.object("Person", {
-  id: __t.u64(),
-  name: __t.string(),
+export const Message = __t.object('Message', {
+	text: __t.string(),
+});
+export type Message = __Infer<typeof Message>;
+
+export const Person = __t.object('Person', {
+	id: __t.u64(),
+	name: __t.string(),
 });
 export type Person = __Infer<typeof Person>;
-

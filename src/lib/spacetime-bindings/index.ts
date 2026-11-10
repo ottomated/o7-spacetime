@@ -6,89 +6,107 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-  DbConnectionBuilder as __DbConnectionBuilder,
-  DbConnectionImpl as __DbConnectionImpl,
-  SubscriptionBuilderImpl as __SubscriptionBuilderImpl,
-  TypeBuilder as __TypeBuilder,
-  Uuid as __Uuid,
-  convertToAccessorMap as __convertToAccessorMap,
-  makeQueryBuilder as __makeQueryBuilder,
-  procedureSchema as __procedureSchema,
-  procedures as __procedures,
-  reducerSchema as __reducerSchema,
-  reducers as __reducers,
-  schema as __schema,
-  t as __t,
-  table as __table,
-  type AlgebraicTypeType as __AlgebraicTypeType,
-  type DbConnectionConfig as __DbConnectionConfig,
-  type ErrorContextInterface as __ErrorContextInterface,
-  type Event as __Event,
-  type EventContextInterface as __EventContextInterface,
-  type Infer as __Infer,
-  type QueryBuilder as __QueryBuilder,
-  type ReducerEventContextInterface as __ReducerEventContextInterface,
-  type RemoteModule as __RemoteModule,
-  type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
-  type SubscriptionHandleImpl as __SubscriptionHandleImpl,
-} from "spacetimedb";
+	DbConnectionBuilder as __DbConnectionBuilder,
+	DbConnectionImpl as __DbConnectionImpl,
+	SubscriptionBuilderImpl as __SubscriptionBuilderImpl,
+	TypeBuilder as __TypeBuilder,
+	Uuid as __Uuid,
+	convertToAccessorMap as __convertToAccessorMap,
+	makeQueryBuilder as __makeQueryBuilder,
+	procedureSchema as __procedureSchema,
+	procedures as __procedures,
+	reducerSchema as __reducerSchema,
+	reducers as __reducers,
+	schema as __schema,
+	t as __t,
+	table as __table,
+	type AlgebraicTypeType as __AlgebraicTypeType,
+	type DbConnectionConfig as __DbConnectionConfig,
+	type ErrorContextInterface as __ErrorContextInterface,
+	type Event as __Event,
+	type EventContextInterface as __EventContextInterface,
+	type Infer as __Infer,
+	type QueryBuilder as __QueryBuilder,
+	type ReducerEventContextInterface as __ReducerEventContextInterface,
+	type RemoteModule as __RemoteModule,
+	type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+	type SubscriptionHandleImpl as __SubscriptionHandleImpl,
+} from 'spacetimedb';
 
 // Import all reducer arg schemas
-import AddReducer from "./add_reducer";
-import RemoveReducer from "./remove_reducer";
-import SayHelloReducer from "./say_hello_reducer";
-import UpdateReducer from "./update_reducer";
+import AddReducer from './add_reducer';
+import AddMessageReducer from './add_message_reducer';
+import ClearReducer from './clear_reducer';
+import ClearMessagesReducer from './clear_messages_reducer';
+import RemoveReducer from './remove_reducer';
+import SayHelloReducer from './say_hello_reducer';
+import UpdateReducer from './update_reducer';
 
 // Import all procedure arg schemas
+import * as PersonCountProcedure from './person_count_procedure';
 
 // Import all table schema definitions
-import PersonRow from "./person_table";
+import MessageRow from './message_table';
+import PersonRow from './person_table';
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
-  person: __table({
-    name: 'person',
-    indexes: [
-      { accessor: 'id', name: 'person_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-    ],
-    constraints: [
-      { name: 'person_id_key', constraint: 'unique', columns: ['id'] },
-    ],
-  }, PersonRow),
+	message: __table(
+		{
+			name: 'message',
+			indexes: [],
+			constraints: [],
+		},
+		MessageRow,
+	),
+	person: __table(
+		{
+			name: 'person',
+			indexes: [
+				{ accessor: 'id', name: 'person_id_idx_btree', algorithm: 'btree', columns: ['id'] },
+			],
+			constraints: [{ name: 'person_id_key', constraint: 'unique', columns: ['id'] }],
+		},
+		PersonRow,
+	),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
-  __reducerSchema("add", AddReducer),
-  __reducerSchema("remove", RemoveReducer),
-  __reducerSchema("say_hello", SayHelloReducer),
-  __reducerSchema("update", UpdateReducer),
+	__reducerSchema('add', AddReducer),
+	__reducerSchema('add_message', AddMessageReducer),
+	__reducerSchema('clear', ClearReducer),
+	__reducerSchema('clear_messages', ClearMessagesReducer),
+	__reducerSchema('remove', RemoveReducer),
+	__reducerSchema('say_hello', SayHelloReducer),
+	__reducerSchema('update', UpdateReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+	__procedureSchema('person_count', PersonCountProcedure.params, PersonCountProcedure.returnType),
 );
 
 /** The remote SpacetimeDB module schema, both runtime and type information. */
 const REMOTE_MODULE = {
-  versionInfo: {
-    cliVersion: "2.14.0" as const,
-  },
-  tables: tablesSchema.schemaType.tables,
-  reducers: reducersSchema.reducersType.reducers,
-  ...proceduresSchema,
+	versionInfo: {
+		cliVersion: '2.14.0' as const,
+	},
+	tables: tablesSchema.schemaType.tables,
+	reducers: reducersSchema.reducersType.reducers,
+	...proceduresSchema,
 } satisfies __RemoteModule<
-  typeof tablesSchema.schemaType,
-  typeof reducersSchema.reducersType,
-  typeof proceduresSchema
+	typeof tablesSchema.schemaType,
+	typeof reducersSchema.reducersType,
+	typeof proceduresSchema
 >;
 
 /** The tables available in this remote SpacetimeDB module. Each table reference doubles as a query builder. */
-export const tables: __QueryBuilder<typeof tablesSchema.schemaType> = __makeQueryBuilder(tablesSchema.schemaType);
+export const tables: __QueryBuilder<typeof tablesSchema.schemaType> = __makeQueryBuilder(
+	tablesSchema.schemaType,
+);
 
 /** The reducers available in this remote SpacetimeDB module. */
 export const reducers = __convertToAccessorMap(reducersSchema.reducersType.reducers);
@@ -115,14 +133,16 @@ export class DbConnectionBuilder extends __DbConnectionBuilder<DbConnection> {}
 
 /** The typed database connection to manage connections to the remote SpacetimeDB instance. This class has type information specific to the generated module. */
 export class DbConnection extends __DbConnectionImpl<typeof REMOTE_MODULE> {
-  /** Creates a new {@link DbConnectionBuilder} to configure and connect to the remote SpacetimeDB instance. */
-  static builder = (): DbConnectionBuilder => {
-    return new DbConnectionBuilder(REMOTE_MODULE, (config: __DbConnectionConfig<typeof REMOTE_MODULE>) => new DbConnection(config));
-  };
+	/** Creates a new {@link DbConnectionBuilder} to configure and connect to the remote SpacetimeDB instance. */
+	static builder = (): DbConnectionBuilder => {
+		return new DbConnectionBuilder(
+			REMOTE_MODULE,
+			(config: __DbConnectionConfig<typeof REMOTE_MODULE>) => new DbConnection(config),
+		);
+	};
 
-  /** Creates a new {@link SubscriptionBuilder} to configure a subscription to the remote SpacetimeDB instance. */
-  override subscriptionBuilder = (): SubscriptionBuilder => {
-    return new SubscriptionBuilder(this);
-  };
+	/** Creates a new {@link SubscriptionBuilder} to configure a subscription to the remote SpacetimeDB instance. */
+	override subscriptionBuilder = (): SubscriptionBuilder => {
+		return new SubscriptionBuilder(this);
+	};
 }
-

@@ -8,6 +8,8 @@ const spacetimedb = schema({
 			name: t.string(),
 		},
 	),
+	// Test rows without primaryKey
+	message: table({ public: true }, { text: t.string() }),
 });
 export default spacetimedb;
 
@@ -35,9 +37,17 @@ export const sayHello = spacetimedb.reducer((ctx) => {
 });
 
 export const clear = spacetimedb.reducer((ctx) => {
-	for (const person of ctx.db.person.iter()) {
-		ctx.db.person.id.delete(person.id);
-	}
+	ctx.db.person.clear();
 });
 
-export const personCount = spacetimedb.procedure(t.u64(), (ctx) => ctx.db.person.count());
+export const addMessage = spacetimedb.reducer({ text: t.string() }, (ctx, { text }) => {
+	ctx.db.message.insert({ text });
+});
+
+export const clearMessages = spacetimedb.reducer((ctx) => {
+	ctx.db.message.clear();
+});
+
+export const personCount = spacetimedb.procedure(t.u64(), (ctx) =>
+	ctx.withTx((tx) => tx.db.person.count()),
+);
