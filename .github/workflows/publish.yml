@@ -36,5 +36,5 @@ jobs:
           pnpm exec playwright install-deps chrome
           pnpm test:e2e
 
-      # - name: Publish
-      #   run: pnpm publish --no-git-checks
+      - name: Publish
+        run: pnpm publish
