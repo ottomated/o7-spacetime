@@ -12,7 +12,7 @@ export default defineConfig({
 		},
 		{
 			name: 'App',
-			command: 'pnpm vite build && spacetime dev --run "pnpm preview"',
+			command: 'pnpm vite build && spacetime publish --yes && pnpm preview',
 			port: 4173,
 			timeout: 300_000,
 		},
