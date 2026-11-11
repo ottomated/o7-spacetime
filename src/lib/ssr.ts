@@ -55,6 +55,10 @@ type AlgebraicValue = SumValue | ProductValue | BuiltinValue;
 type SumValue = { tag: number };
 //#endregion
 
+// Why ssr won't work:
+// - have to maintain a SATS-JSON parser in typescript
+// - SATS-JSON doesn't support large numbers, so no uuids or anything above u32, silent loss of precision
+// - per spacetimedb docs, this endpoint isn't designed for performance
 export function parse_json_row(row: any[], schema: ProductType): Record<string, any> {
 	const result: Record<string, any> = {};
 	for (let index = 0; index < schema.elements.length; index++) {
