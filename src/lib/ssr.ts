@@ -1,17 +1,62 @@
-import type { ProductType, AlgebraicType } from 'spacetimedb';
+//#region Types
+type AlgebraicType =
+	| {
+			Sum: SumType;
+	  }
+	| { Product: ProductType }
+	| BuiltinType;
 
-export type SqlResponse = [
-	{
-		schema: ProductType;
-		rows: any[][];
-	},
-];
+type BuiltinType =
+	| { Bool: [] }
+	| { I8: [] }
+	| { U8: [] }
+	| { I16: [] }
+	| { U16: [] }
+	| { I32: [] }
+	| { U32: [] }
+	| { I64: [] }
+	| { U64: [] }
+	| { I128: [] }
+	| { U128: [] }
+	| { F32: [] }
+	| { F64: [] }
+	| { String: [] }
+	| { Array: AlgebraicType }
+	| {
+			Map: {
+				key_ty: AlgebraicType;
+				ty: AlgebraicType;
+			};
+	  };
+
+type SumTypeVariant = {
+	algebraic_type: AlgebraicType;
+	name: { some: string } | { none: [] };
+};
+type SumType = {
+	variants: Array<SumTypeVariant>;
+};
+
+type ProductTypeElement = {
+	algebraic_type: AlgebraicType;
+	name: { some: string } | { none: [] };
+};
+type ProductType = {
+	elements: Array<ProductTypeElement>;
+};
+//#endregion
+
+//#region Values
+type AlgebraicValue = SumValue | ProductValue | BuiltinValue;
+type SumValue = { tag: number };
+//#endregion
 
 export function parse_json_row(row: any[], schema: ProductType): Record<string, any> {
 	const result: Record<string, any> = {};
 	for (let index = 0; index < schema.elements.length; index++) {
 		const element = schema.elements[index]!;
-		console.log(element);
+		console.log(element.name.some, row[index]);
 	}
+	console.log(row);
 	return result;
 }

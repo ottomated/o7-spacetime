@@ -17,8 +17,52 @@ const spacetimedb = schema({
 	),
 	// Test rows without primaryKey
 	message: table({ public: true }, { text: t.string() }),
+	// Exhaustive types
+	types: table(
+		{ public: true },
+		{
+			u8: t.u8(),
+			i8: t.i8(),
+			u16: t.u16(),
+			i16: t.i16(),
+			u32: t.u32(),
+			i32: t.i32(),
+			u64: t.u64(),
+			i64: t.i64(),
+			u128: t.u128(),
+			i128: t.i128(),
+			u256: t.u256(),
+			i256: t.i256(),
+			string: t.string(),
+			bool: t.bool(),
+			byteArray: t.byteArray(),
+			array: t.array(t.string()),
+			connectionId: t.connectionId(),
+			enum: t.enum('Enum', { a: t.u8(), b: t.i8() }),
+			identity: t.identity(),
+			object: t.object('Object', {
+				a: t.string(),
+			}),
+			timestamp: t.timestamp(),
+			duration: t.timeDuration(),
+			uuid: t.uuid(),
+			unit: t.unit(),
+			scheduleAt: t.scheduleAt(),
+		},
+	),
 });
 export default spacetimedb;
+
+export const init = spacetimedb.init((ctx) => {
+	ctx.db.types.insert({
+		u8: 1,
+		i8: -1,
+		u16: 2,
+		i16: -2,
+		u32: 3,
+		i32: -3,
+	});
+});
 
 export const add = spacetimedb.reducer({ name: t.string() }, (ctx, { name }) => {
 	ctx.db.person.insert({
