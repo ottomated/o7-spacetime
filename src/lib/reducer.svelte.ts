@@ -1,16 +1,16 @@
 import { getConnection } from './provider.svelte';
-import { browser } from '$app/env';
+import { BROWSER } from 'esm-env';
 import type { ParamsType, UntypedReducerDef } from './types';
 
 export function reducer<ReducerDef extends UntypedReducerDef>(
 	def: ReducerDef,
 ): (...params: ParamsType<ReducerDef>) => Promise<void> {
-	if (!browser) {
+	if (!BROWSER) {
 		return () => {
 			throw new Error('Cannot call a SpacetimeDB reducer during SSR');
 		};
 	}
-	const instance = getConnection();
+	const instance = getConnection('reducer');
 	const name = def.accessorName;
 
 	type Params = ParamsType<ReducerDef>;

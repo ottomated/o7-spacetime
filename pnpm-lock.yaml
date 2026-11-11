@@ -193,6 +193,9 @@ importers:
       eslint-plugin-svelte:
         specifier: ^3.19.0
         version: 3.23.1(eslint@10.14.0)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+      esm-env:
+        specifier: ^1.2.2
+        version: 1.2.2
       globals:
         specifier: ^17.6.0
         version: 17.14.0

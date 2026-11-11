@@ -3,16 +3,16 @@
 
 /* eslint-disable */
 /* tslint:disable */
-import { type Infer as __Infer } from 'spacetimedb';
+import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
-import AddReducer from '../add_reducer';
-import AddMessageReducer from '../add_message_reducer';
-import ClearReducer from '../clear_reducer';
-import ClearMessagesReducer from '../clear_messages_reducer';
-import RemoveReducer from '../remove_reducer';
-import SayHelloReducer from '../say_hello_reducer';
-import UpdateReducer from '../update_reducer';
+import AddReducer from "../add_reducer";
+import AddMessageReducer from "../add_message_reducer";
+import ClearReducer from "../clear_reducer";
+import ClearMessagesReducer from "../clear_messages_reducer";
+import RemoveReducer from "../remove_reducer";
+import SayHelloReducer from "../say_hello_reducer";
+import UpdateReducer from "../update_reducer";
 
 export type AddParams = __Infer<typeof AddReducer>;
 export type AddMessageParams = __Infer<typeof AddMessageReducer>;
@@ -21,3 +21,4 @@ export type ClearMessagesParams = __Infer<typeof ClearMessagesReducer>;
 export type RemoveParams = __Infer<typeof RemoveReducer>;
 export type SayHelloParams = __Infer<typeof SayHelloReducer>;
 export type UpdateParams = __Infer<typeof UpdateReducer>;
+

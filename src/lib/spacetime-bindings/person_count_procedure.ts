@@ -4,11 +4,12 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	TypeBuilder as __TypeBuilder,
-	t as __t,
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-} from 'spacetimedb';
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
+} from "spacetimedb";
 
-export const params = {};
-export const returnType = __t.u64();
+export const params = {
+};
+export const returnType = __t.u64()

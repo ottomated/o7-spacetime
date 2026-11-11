@@ -7,6 +7,8 @@ import {
 import { connection_cache } from './cache.svelte';
 import { getContext, setContext } from 'svelte';
 import type { UntypedBuilder, UntypedDbConnection } from './types';
+import { BROWSER } from 'esm-env';
+import { parse_json_row, type SqlResponse } from './ssr';
 
 export type ConnectionState_<DbConnection extends UntypedDbConnection> =
 	| {
@@ -33,6 +35,25 @@ export class ConnectionState<DbConnection extends UntypedDbConnection> {
 	#connection_error = $state.raw<Error | undefined>();
 	#token = $state.raw<string | undefined>();
 	#connection = $state.raw<DbConnection | null>(null);
+
+	get connection() {
+		return this.#connection;
+	}
+	get state() {
+		return this.#state;
+	}
+	get identity() {
+		return this.#identity;
+	}
+	get connectionId() {
+		return this.#connection_id;
+	}
+	get connectionError() {
+		return this.#connection_error;
+	}
+	get token() {
+		return this.#token;
+	}
 
 	/** @internal */
 	connect(connection: DbConnection, identity: Identity, token: string) {
@@ -63,23 +84,32 @@ export class ConnectionState<DbConnection extends UntypedDbConnection> {
 		this.#connection = null;
 	}
 
-	get connection() {
-		return this.#connection;
-	}
-	get state() {
-		return this.#state;
-	}
-	get identity() {
-		return this.#identity;
-	}
-	get connectionId() {
-		return this.#connection_id;
-	}
-	get connectionError() {
-		return this.#connection_error;
-	}
-	get token() {
-		return this.#token;
+	/** @internal */
+	config!: DbConnectionConfig<never>;
+
+	/** @internal */
+	async ssr_query(sql: string) {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const url = new URL(`v1/database/${this.config.nameOrAddress}/sql`, this.config.uri);
+		const headers = new Headers();
+		if (this.config.token) {
+			headers.set('Authorization', `Bearer ${this.config.token}`);
+		}
+		const res = await fetch(url, {
+			method: 'POST',
+			headers,
+			body: sql,
+		});
+		if (!res.ok) {
+			throw new Error(`SpacetimeDB request failed (${res.status}): ${await res.text()}`);
+		}
+		const data: SqlResponse = await res.json();
+
+		for (const row of data[0].rows) {
+			console.log('a', parse_json_row(row, data[0].schema));
+		}
+
+		// console.log(data[0].schema.elements, data[0].rows[0]);
 	}
 }
 
@@ -104,10 +134,16 @@ export function createSpacetime<DbConnection extends UntypedDbConnection>(
 	connectionBuilder: DbConnectionBuilder<DbConnection> | (() => DbConnectionBuilder<DbConnection>),
 ) {
 	const instance = new ConnectionState<DbConnection>();
+	if (!BROWSER) {
+		const builder =
+			typeof connectionBuilder === 'function' ? connectionBuilder() : connectionBuilder;
+		instance.config = probe_builder(builder);
+	}
 	$effect(() => {
 		const builder =
 			typeof connectionBuilder === 'function' ? connectionBuilder() : connectionBuilder;
 		const config = probe_builder(builder);
+		instance.config = config;
 
 		const entry = connection_cache.ref(builder, config, instance);
 
@@ -117,11 +153,13 @@ export function createSpacetime<DbConnection extends UntypedDbConnection>(
 	return instance as ConnectionState_<DbConnection>;
 }
 
-export function getConnection<DbConnection extends UntypedDbConnection>() {
+export function getConnection<DbConnection extends UntypedDbConnection>(
+	function_name = 'getConnection',
+) {
 	const instance = getContext<ConnectionState_<DbConnection> | undefined>(context_key);
 	if (!instance) {
 		throw new Error(
-			'getConnection must be used within a component that called createSpacetime. ' +
+			`${function_name} must be used within a component that called createSpacetime. ` +
 				'Did you forget to call `createSpacetime` in a parent component?',
 		);
 	}

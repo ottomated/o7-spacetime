@@ -3,10 +3,11 @@
 
 /* eslint-disable */
 /* tslint:disable */
-import { type Infer as __Infer } from 'spacetimedb';
+import { type Infer as __Infer } from "spacetimedb";
 
 // Import all procedure arg schemas
-import * as PersonCountProcedure from '../person_count_procedure';
+import * as PersonCountProcedure from "../person_count_procedure";
 
 export type PersonCountArgs = __Infer<typeof PersonCountProcedure.params>;
 export type PersonCountResult = __Infer<typeof PersonCountProcedure.returnType>;
+

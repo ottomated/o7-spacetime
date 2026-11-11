@@ -10,6 +10,7 @@ import {
 } from 'spacetimedb';
 import { getConnection } from './provider.svelte';
 import type { ClientTable, OnDelete, OnInsert, OnUpdate, Prettify } from './types';
+import { BROWSER } from 'esm-env';
 
 class Table<Row extends Record<string, unknown>> {
 	rows = $state<Row[]>([]);
@@ -113,7 +114,10 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 	const where_expr = getQueryWhereClause(query);
 	const query_sql = toSql(query);
 
-	const instance = getConnection();
+	const instance = getConnection('table');
+	if (!BROWSER) {
+		instance.ssr_query(query_sql);
+	}
 
 	const table = new Table<Row>(query);
 

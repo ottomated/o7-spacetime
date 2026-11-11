@@ -1,16 +1,16 @@
 import { getConnection } from './provider.svelte';
-import { browser } from '$app/env';
+import { BROWSER } from 'esm-env';
 import type { ParamsType, ProcedureReturnType, UntypedProcedureDef } from './types';
 
 export function procedure<ProcedureDef extends UntypedProcedureDef>(
 	def: ProcedureDef,
 ): (...params: ParamsType<ProcedureDef>) => Promise<ProcedureReturnType<ProcedureDef>> {
-	if (!browser) {
+	if (!BROWSER) {
 		return () => {
 			throw new Error('Cannot call a SpacetimeDB procedure during SSR');
 		};
 	}
-	const instance = getConnection();
+	const instance = getConnection('procedure');
 	const name = def.accessorName;
 
 	type Params = ParamsType<ProcedureDef>;
