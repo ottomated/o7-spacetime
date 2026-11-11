@@ -10,25 +10,59 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export const B = __t.object("B", {
-  a: __t.array(__t.i256()),
+// The tagged union or sum type for the algebraic type `Enum`.
+export const Enum = __t.enum("Enum", {
+  A: __t.u8(),
+  B: __t.i8(),
 });
-export type B = __Infer<typeof B>;
+export type Enum = __Infer<typeof Enum>;
 
 export const Message = __t.object("Message", {
   text: __t.string(),
 });
 export type Message = __Infer<typeof Message>;
 
+export const Object = __t.object("Object", {
+  a: __t.string(),
+});
+export type Object = __Infer<typeof Object>;
+
 export const Person = __t.object("Person", {
   id: __t.u64(),
   name: __t.string(),
-  ide: __t.identity(),
-  d: __t.timeDuration(),
-  a: __t.byteArray(),
-  get b() {
-    return B;
-  },
 });
 export type Person = __Infer<typeof Person>;
+
+export const Types = __t.object("Types", {
+  u8: __t.u8(),
+  i8: __t.i8(),
+  u16: __t.u16(),
+  i16: __t.i16(),
+  u32: __t.u32(),
+  i32: __t.i32(),
+  u64: __t.u64(),
+  i64: __t.i64(),
+  u128: __t.u128(),
+  i128: __t.i128(),
+  u256: __t.u256(),
+  i256: __t.i256(),
+  string: __t.string(),
+  bool: __t.bool(),
+  byteArray: __t.byteArray(),
+  array: __t.array(__t.string()),
+  connectionId: __t.connectionId(),
+  get enum() {
+    return Enum;
+  },
+  identity: __t.identity(),
+  get object() {
+    return Object;
+  },
+  timestamp: __t.timestamp(),
+  duration: __t.timeDuration(),
+  uuid: __t.uuid(),
+  unit: __t.unit(),
+  scheduleAt: __t.scheduleAt(),
+});
+export type Types = __Infer<typeof Types>;
 

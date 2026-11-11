@@ -116,7 +116,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 
 	const instance = getConnection('table');
 	if (!BROWSER) {
-		instance.ssr_query(query_sql);
+		instance.ssr_query('SELECT * FROM types');
 	}
 
 	const table = new Table<Row>(query);

@@ -1,3 +1,5 @@
+import { Uuid } from 'spacetimedb';
+
 //#region Types
 type AlgebraicType =
 	| {
@@ -18,6 +20,8 @@ type BuiltinType =
 	| { U64: [] }
 	| { I128: [] }
 	| { U128: [] }
+	| { U256: [] }
+	| { I256: [] }
 	| { F32: [] }
 	| { F64: [] }
 	| { String: [] }
@@ -55,7 +59,11 @@ export function parse_json_row(row: any[], schema: ProductType): Record<string, 
 	const result: Record<string, any> = {};
 	for (let index = 0; index < schema.elements.length; index++) {
 		const element = schema.elements[index]!;
-		console.log(element.name.some, row[index]);
+		console.log(element.name.some, row[index], JSON.stringify(element.algebraic_type));
+		if (element.name.some === 'uuid') {
+			console.log(row[index][0]);
+			console.log(new Uuid(row[index][0]));
+		}
 	}
 	console.log(row);
 	return result;
