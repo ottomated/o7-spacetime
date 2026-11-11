@@ -113,7 +113,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 	const where_expr = getQueryWhereClause(query);
 	const query_sql = toSql(query);
 
-	const instance = getConnection();
+	const instance = getConnection('table');
 
 	const table = new Table<Row>(query);
 

@@ -9,7 +9,6 @@
 
 ## Basic Usage
 
-<!-- prettier-ignore -->
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
@@ -18,7 +17,7 @@
 
   let { children } = $props();
 
-  createSpacetime(() =>
+  createSpacetime(
     DbConnection.builder()
       .withUri('http://localhost:3000')
       .withDatabaseName('my-db'),
@@ -28,7 +27,6 @@
 {@render children()}
 ```
 
-<!-- prettier-ignore -->
 ```svelte
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
@@ -50,7 +48,30 @@
 {/each}
 ```
 
+## Dynamic token
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script lang="ts">
+  import { createSpacetime } from '@o7/spacetime';
+  import { DbConnection } from './bindings';
+
+  const { data } = $props();
+
+  createSpacetime(() =>
+    DbConnection.builder()
+      .withUri('http://localhost:3000')
+      .withToken(data.token)
+      .withDatabaseName('my-db'),
+  );
+</script>
+```
+
 ## Changelog
+
+### 0.0.3
+
+- Better getConnection error messages
 
 ### 0.0.2
 

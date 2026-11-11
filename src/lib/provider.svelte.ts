@@ -117,11 +117,13 @@ export function createSpacetime<DbConnection extends UntypedDbConnection>(
 	return instance as ConnectionState_<DbConnection>;
 }
 
-export function getConnection<DbConnection extends UntypedDbConnection>() {
+export function getConnection<DbConnection extends UntypedDbConnection>(
+	function_name = 'getConnection',
+) {
 	const instance = getContext<ConnectionState_<DbConnection> | undefined>(context_key);
 	if (!instance) {
 		throw new Error(
-			'getConnection must be used within a component that called createSpacetime. ' +
+			`${function_name} must be used within a component that called createSpacetime. ` +
 				'Did you forget to call `createSpacetime` in a parent component?',
 		);
 	}

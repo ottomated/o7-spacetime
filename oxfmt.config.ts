@@ -6,4 +6,13 @@ export default defineConfig({
 	useTabs: true,
 	sortTailwindcss: true,
 	svelte: true,
+	overrides: [
+		{
+			files: ['*.md'],
+			options: {
+				useTabs: false,
+				printWidth: 80,
+			},
+		},
+	],
 });
