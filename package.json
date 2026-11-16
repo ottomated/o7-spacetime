@@ -5,6 +5,9 @@
 		"spacetimedb",
 		"svelte"
 	],
+	"repository": {
+		"url": "git+https://github.com/ottomated/o7-spacetime.git"
+	},
 	"files": [
 		"dist",
 		"!dist/**/*.test.*",
