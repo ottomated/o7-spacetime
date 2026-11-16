@@ -8,7 +8,7 @@ import { connection_cache } from './cache.svelte.js';
 import { getContext, setContext } from 'svelte';
 import type { UntypedBuilder, UntypedDbConnection } from './types.js';
 
-export type ConnectionState_<DbConnection extends UntypedDbConnection> =
+export type ConnectionState<DbConnection extends UntypedDbConnection> =
 	| {
 			readonly state: 'disconnected';
 			readonly identity: null;
@@ -26,7 +26,7 @@ export type ConnectionState_<DbConnection extends UntypedDbConnection> =
 			readonly connection: DbConnection;
 	  };
 
-export class ConnectionState<DbConnection extends UntypedDbConnection> {
+export class ConnectionState_<DbConnection extends UntypedDbConnection> {
 	#state = $state.raw<'connected' | 'disconnected'>('disconnected');
 	#identity = $state.raw<Identity | null>(null);
 	#connection_id = $state.raw<ConnectionId | null>(null);
@@ -103,7 +103,7 @@ const context_key = Symbol('spacetimedb');
 export function createSpacetime<DbConnection extends UntypedDbConnection>(
 	connectionBuilder: DbConnectionBuilder<DbConnection> | (() => DbConnectionBuilder<DbConnection>),
 ) {
-	const instance = new ConnectionState<DbConnection>();
+	const instance = new ConnectionState_<DbConnection>();
 	$effect(() => {
 		const builder =
 			typeof connectionBuilder === 'function' ? connectionBuilder() : connectionBuilder;
@@ -114,13 +114,13 @@ export function createSpacetime<DbConnection extends UntypedDbConnection>(
 		return () => connection_cache.deref(entry, instance);
 	});
 	setContext(context_key, instance);
-	return instance as ConnectionState_<DbConnection>;
+	return instance as ConnectionState<DbConnection>;
 }
 
 export function getConnection<DbConnection extends UntypedDbConnection>(
 	function_name = 'getConnection',
 ) {
-	const instance = getContext<ConnectionState_<DbConnection> | undefined>(context_key);
+	const instance = getContext<ConnectionState<DbConnection> | undefined>(context_key);
 	if (!instance) {
 		throw new Error(
 			`${function_name} must be used within a component that called createSpacetime. ` +

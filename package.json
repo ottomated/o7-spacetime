@@ -63,6 +63,7 @@
 		"spacetimedb": "^2.15.0",
 		"svelte": "^5.57.2",
 		"svelte-check": "^4.6.0",
+		"tsup": "^9.0.0",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.72.2",
 		"vite": "^8.3.7",

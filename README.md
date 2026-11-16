@@ -69,6 +69,10 @@
 
 ## Changelog
 
+### 0.0.5
+
+- Add table callbacks
+
 ### 0.0.3
 
 - Better getConnection error messages

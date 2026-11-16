@@ -1,13 +1,13 @@
 /* eslint-disable svelte/prefer-svelte-reactivity */
 import { tick } from 'svelte';
-import { ConnectionState } from './provider.svelte.js';
+import { ConnectionState_ } from './provider.svelte.js';
 import type { DbConnectionConfig, Identity } from 'spacetimedb';
 import type { UntypedDbConnection, UntypedBuilder } from './types.js';
 
 type CacheEntry = {
 	key: string;
 	connection: UntypedDbConnection;
-	refs: Set<ConnectionState<UntypedDbConnection>>;
+	refs: Set<ConnectionState_<UntypedDbConnection>>;
 	connected: boolean;
 	identity: Identity | null;
 	token: string | null;
@@ -19,12 +19,12 @@ export class CacheController {
 	ref(
 		builder: UntypedBuilder,
 		config: DbConnectionConfig<never>,
-		instance: ConnectionState<UntypedDbConnection>,
+		instance: ConnectionState_<UntypedDbConnection>,
 	) {
 		const key = `${builder.getUri()}::${builder.getModuleName()}::${config.token}`;
 		let entry = this.map.get(key);
 		if (!entry) {
-			const refs = new Set<ConnectionState<UntypedDbConnection>>();
+			const refs = new Set<ConnectionState_<UntypedDbConnection>>();
 			const new_entry: CacheEntry = {
 				key,
 				refs,
@@ -69,7 +69,7 @@ export class CacheController {
 		return entry;
 	}
 
-	deref(entry: CacheEntry, instance: ConnectionState<UntypedDbConnection>) {
+	deref(entry: CacheEntry, instance: ConnectionState_<UntypedDbConnection>) {
 		const key = entry.key;
 		entry.refs.delete(instance);
 		void tick().then(() => {

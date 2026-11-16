@@ -20,11 +20,13 @@ class Table<Row extends Record<string, unknown>> {
 		return this.#is_active;
 	}
 
+	#callbacks?: TableCallbacks<Row>;
 	#index_map = new Map<unknown, number>();
 	#get_map_key: (row: Row) => unknown;
 
 	/** @internal */
-	constructor(query: Query<TypedTableDef>) {
+	constructor(query: Query<TypedTableDef>, callbacks?: TableCallbacks<Row>) {
+		this.#callbacks = callbacks;
 		const table_def = get_table_def(query);
 		const pk_column = Object.entries(table_def.columns).find(
 			([, column]) => column.columnMetadata.isPrimaryKey,
@@ -49,6 +51,7 @@ class Table<Row extends Record<string, unknown>> {
 		if (this.#index_map.has(key)) return;
 		this.rows.push(row);
 		this.#index_map.set(key, this.rows.length - 1);
+		this.#callbacks?.onInsert?.(row);
 	}
 	/** @internal */
 	remove(row: Row) {
@@ -62,6 +65,7 @@ class Table<Row extends Record<string, unknown>> {
 		for (const [key, other_index] of this.#index_map) {
 			if (other_index > index) this.#index_map.set(key, other_index - 1);
 		}
+		this.#callbacks?.onDelete?.(row);
 	}
 	/** @internal */
 	update(old_row: Row, new_row: Row) {
@@ -75,6 +79,7 @@ class Table<Row extends Record<string, unknown>> {
 		Object.assign(old_row_state, new_row);
 		this.#index_map.delete(old_key);
 		this.#index_map.set(this.#get_map_key(new_row), index);
+		this.#callbacks?.onUpdate?.(old_row, new_row);
 	}
 	/** @internal */
 	set_rows(rows: Array<Row>) {
@@ -84,6 +89,7 @@ class Table<Row extends Record<string, unknown>> {
 			const key = this.#get_map_key(rows[index]!);
 			this.#index_map.set(key, index);
 		}
+		this.#callbacks?.onSetRows?.(rows);
 	}
 	/** @internal */
 	set_active(value: boolean) {
@@ -106,7 +112,17 @@ function get_table_def(query: Query<TypedTableDef>): TypedTableDef {
 	throw new Error('Cannot extract table def from query builder expression');
 }
 
-export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
+type TableCallbacks<Row> = {
+	onInsert?: (row: Row) => void;
+	onDelete?: (row: Row) => void;
+	onUpdate?: (oldRow: Row, newRow: Row) => void;
+	onSetRows?: (rows: Row[]) => void;
+};
+
+export function table<TableDef extends TypedTableDef>(
+	query: Query<TableDef>,
+	callbacks?: TableCallbacks<Prettify<NonNullable<(typeof query)['__row']>>>,
+) {
 	type Row = Prettify<NonNullable<(typeof query)['__row']>>;
 
 	const accessor_name = getQueryAccessorName(query);
@@ -115,7 +131,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 
 	const instance = getConnection('table');
 
-	const table = new Table<Row>(query);
+	const table = new Table<Row>(query, callbacks);
 
 	const on_insert: OnInsert<Row> = (_, row) => {
 		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
@@ -139,6 +155,7 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 	};
 
 	const on_delete: OnDelete<Row> = (_, row) => {
+		if (where_expr && !evaluateBooleanExpr(where_expr, row)) return;
 		table.remove(row);
 	};
 
@@ -164,8 +181,8 @@ export function table<TableDef extends TypedTableDef>(query: Query<TableDef>) {
 			.subscriptionBuilder()
 			.onApplied(() => {
 				const rows = get_filtered_rows();
-				table.set_active(true);
 				table.set_rows(rows);
+				table.set_active(true);
 			})
 			.subscribe(query_sql);
 

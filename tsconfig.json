@@ -2,6 +2,7 @@
 	"extends": "$app/tsconfig",
 	"compilerOptions": {
 		"strict": true,
+		"stripInternal": true,
 		"types": ["$app/types", "node"]
 	},
 	"include": ["src", "vite.config.ts", "eslint.config.js", "playwright.config.ts"]
