@@ -1,4 +1,4 @@
-export { createSpacetime, getConnection } from './provider.svelte.ts';
-export { reducer } from './reducer.svelte.ts';
-export { table } from './table.svelte.ts';
-export { procedure } from './procedure.svelte.ts';
+export { createSpacetime, getConnection } from './provider.svelte.js';
+export { reducer } from './reducer.svelte.js';
+export { table } from './table.svelte.js';
+export { procedure } from './procedure.svelte.js';

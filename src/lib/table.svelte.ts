@@ -8,8 +8,8 @@ import {
 	type Query,
 	type TypedTableDef,
 } from 'spacetimedb';
-import { getConnection } from './provider.svelte';
-import type { ClientTable, OnDelete, OnInsert, OnUpdate, Prettify } from './types';
+import { getConnection } from './provider.svelte.js';
+import type { ClientTable, OnDelete, OnInsert, OnUpdate, Prettify } from './types.js';
 
 class Table<Row extends Record<string, unknown>> {
 	rows = $state<Row[]>([]);

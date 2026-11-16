@@ -4,9 +4,9 @@ import {
 	type DbConnectionBuilder,
 	type DbConnectionConfig,
 } from 'spacetimedb';
-import { connection_cache } from './cache.svelte';
+import { connection_cache } from './cache.svelte.js';
 import { getContext, setContext } from 'svelte';
-import type { UntypedBuilder, UntypedDbConnection } from './types';
+import type { UntypedBuilder, UntypedDbConnection } from './types.js';
 
 export type ConnectionState_<DbConnection extends UntypedDbConnection> =
 	| {

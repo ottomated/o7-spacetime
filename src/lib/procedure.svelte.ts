@@ -1,6 +1,6 @@
-import { getConnection } from './provider.svelte';
+import { getConnection } from './provider.svelte.js';
 import { BROWSER } from 'esm-env';
-import type { ParamsType, ProcedureReturnType, UntypedProcedureDef } from './types';
+import type { ParamsType, ProcedureReturnType, UntypedProcedureDef } from './types.js';
 
 export function procedure<ProcedureDef extends UntypedProcedureDef>(
 	def: ProcedureDef,

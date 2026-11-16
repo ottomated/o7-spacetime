@@ -1,8 +1,8 @@
 /* eslint-disable svelte/prefer-svelte-reactivity */
 import { tick } from 'svelte';
-import { ConnectionState } from './provider.svelte';
+import { ConnectionState } from './provider.svelte.js';
 import type { DbConnectionConfig, Identity } from 'spacetimedb';
-import type { UntypedDbConnection, UntypedBuilder } from './types';
+import type { UntypedDbConnection, UntypedBuilder } from './types.js';
 
 type CacheEntry = {
 	key: string;

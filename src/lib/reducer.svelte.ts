@@ -1,6 +1,6 @@
-import { getConnection } from './provider.svelte';
+import { getConnection } from './provider.svelte.js';
 import { BROWSER } from 'esm-env';
-import type { ParamsType, UntypedReducerDef } from './types';
+import type { ParamsType, UntypedReducerDef } from './types.js';
 
 export function reducer<ReducerDef extends UntypedReducerDef>(
 	def: ReducerDef,
